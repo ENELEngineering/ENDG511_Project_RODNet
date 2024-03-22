@@ -1,3 +1,13 @@
+# Copyright 2024. All Rights Reserved.
+#
+# Unauthorized copying of this file, via any medium is strictly prohibited
+# Proprietary and confidential.
+#
+# This source code is provided solely for runtime interpretation by Python.
+# Modifying or copying any source code is explicitly forbidden.
+# 
+# This python file is used explicitly to meet the project requirements provided
+# in ENDG 511 at the University of Calgary.
 
 from __future__ import annotations
 from typing import TYPE_CHECKING, Union
@@ -8,6 +18,7 @@ if TYPE_CHECKING:
 import torch
 import json
 import os
+
 
 class TrainBranchedHandler():
     """
@@ -20,7 +31,8 @@ class TrainBranchedHandler():
             optimizer: Union[torch.optim.adam.Adam], 
             device: torch.device, 
             scheduler: Union[torch.optim.lr_scheduler.StepLR]=None, 
-            num_epochs: int=1
+            num_epochs: int=1,
+            half: bool=False
         ):
 
         self.net = net
@@ -29,6 +41,9 @@ class TrainBranchedHandler():
         self.scheduler = scheduler
         self.NUM_EPOCHS = num_epochs
         self.device = device
+        self.half = half
+        if half:
+            self.scaler = torch.cuda.amp.GradScaler()
 
         self.history = {
             "short_branched": {
@@ -54,23 +69,41 @@ class TrainBranchedHandler():
             total1loss, total2loss, totalloss = 0, 0, 0
 
             self.net.train()
-            for _, data_dict in enumerate(train_loader):
-                print(f"{data_dict.keys()=}")
+            for iter, data_dict in enumerate(train_loader):
+                print(f"{iter=}", end="\r")
+                # Getting data
                 data = data_dict['radar_data'].to(self.device)
                 confmap_gt = data_dict['anno']['confmaps'].to(self.device)
-
+                # Forward
                 self.optimizer.zero_grad()
-                confmap_preds_1,confmap_preds_2 = self.net(data.float())
-                loss_confmap_1 = self.criterion(confmap_preds_1, confmap_gt.float())
-                loss_confmap_2 = self.criterion(confmap_preds_2, confmap_gt.float())
+                if self.half:
+                    # Enables autocasting for the forward pass (model + loss)
+                    with torch.cuda.amp.autocast():
+                        confmap_preds_1,confmap_preds_2 = self.net(data.float())
+                        loss_confmap_1 = self.criterion(confmap_preds_1, confmap_gt.float())
+                        loss_confmap_2 = self.criterion(confmap_preds_2, confmap_gt.float())
+                else:
+                    confmap_preds_1,confmap_preds_2 = self.net(data.float())
+                    loss_confmap_1 = self.criterion(confmap_preds_1, confmap_gt.float())
+                    loss_confmap_2 = self.criterion(confmap_preds_2, confmap_gt.float())
+                # Backward
                 total1loss += loss_confmap_1.item()
                 total2loss += loss_confmap_2.item()
                 totalloss += 0.5*loss_confmap_1.item() + 0.5*loss_confmap_2.item()
-                loss_confmap_1.backward(
-                    inputs=list(self.net.encoder.parameters()) + list(self.net.decoder_short.parameters()), 
-                    retain_graph=True)
-                loss_confmap_2.backward(
-                    inputs=list(self.net.decoder_long.parameters()))
+                if self.half:    
+                    self.scaler.scale(loss_confmap_1).backward(
+                        inputs=list(self.net.encoder.parameters()) + list(self.net.decoder_short.parameters()), 
+                        retain_graph=True
+                    )
+                    self.scaler.scale(loss_confmap_2).backward(
+                        inputs=list(self.net.decoder_long.parameters())
+                    )
+                else:
+                    loss_confmap_1.backward(
+                        inputs=list(self.net.encoder.parameters()) + list(self.net.decoder_short.parameters()), 
+                        retain_graph=True)
+                    loss_confmap_2.backward(
+                        inputs=list(self.net.decoder_long.parameters()))
                 self.optimizer.step()
 
             self.scheduler.step()
@@ -92,7 +125,7 @@ class TrainBranchedHandler():
         return self.net, self.history
     
     def save_metrics(self, results_dir=""):
-        save_model_path = os.path.join(results_dir, "metrics_branched.json")
+        save_model_path = os.path.join(results_dir, "training_metrics_branched.json")
         with open(save_model_path, 'w') as fp:
             json.dump(self.history, fp)
     
@@ -108,7 +141,8 @@ class TrainBaseHandler():
             optimizer: Union[torch.optim.adam.Adam], 
             device: torch.device, 
             scheduler: Union[torch.optim.lr_scheduler.StepLR]=None, 
-            num_epochs: int=1
+            num_epochs: int=1,
+            half: bool=False
         ):
         self.net = net
         self.criterion = criterion
@@ -116,6 +150,9 @@ class TrainBaseHandler():
         self.scheduler = scheduler
         self.NUM_EPOCHS = num_epochs
         self.device = device
+        self.half = half
+        if half:
+            self.scaler = torch.cuda.amp.GradScaler()
 
         self.history = {
             "train": {"loss": []}
@@ -131,16 +168,32 @@ class TrainBaseHandler():
             totalloss = 0
 
             self.net.train()
-            for _, data_dict in enumerate(train_loader):
+            for iter, data_dict in enumerate(train_loader):
+                print(f"{iter=}", end="\r")
+                # Getting data
                 data = data_dict['radar_data'].to(self.device)
                 confmap_gt = data_dict['anno']['confmaps'].to(self.device)
+                # Forward
                 self.optimizer.zero_grad()
-                confmap_preds = self.net(data.float())
-                loss_confmap = self.criterion(confmap_preds, confmap_gt.float())
+                if self.half:
+                    # Enables autocasting for the forward pass (model + loss)
+                    with torch.cuda.amp.autocast():
+                        confmap_preds = self.net(data.float())
+                        loss_confmap = self.criterion(confmap_preds, confmap_gt.float())
+                else:
+                    confmap_preds = self.net(data.float())
+                    loss_confmap = self.criterion(confmap_preds, confmap_gt.float())
+                
+                # Backward
                 totalloss += loss_confmap.item()
-                loss_confmap.backward()
+                if self.half:    
+                    self.scaler.scale(loss_confmap).backward()
+                    # self.scaler.step(self.optimizer) # NOSONAR => Issue with FP16
+                    # self.scaler.update()
+                else:
+                    loss_confmap.backward()
                 self.optimizer.step()
-
+                
             self.scheduler.step()
             totalloss = totalloss/len(train_loader)
             self.history["train"]["loss"].append(totalloss)
@@ -153,6 +206,6 @@ class TrainBaseHandler():
         return self.net, self.history
 
     def save_metrics(self, results_dir=""):
-        save_model_path = os.path.join(results_dir, "metrics_base.json")
+        save_model_path = os.path.join(results_dir, "training_metrics_base.json")
         with open(save_model_path, 'w') as fp:
             json.dump(self.history, fp)

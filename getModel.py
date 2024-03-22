@@ -1,4 +1,17 @@
+# Copyright 2024. All Rights Reserved.
+#
+# Unauthorized copying of this file, via any medium is strictly prohibited
+# Proprietary and confidential.
+#
+# This source code is provided solely for runtime interpretation by Python.
+# Modifying or copying any source code is explicitly forbidden.
+# 
+# This python file is used explicitly to meet the project requirements provided
+# in ENDG 511 at the University of Calgary.
+
 import torch.nn as nn
+import torch
+import os
 
 
 class RODEncodeBase(nn.Module):
@@ -53,7 +66,7 @@ class RODEncodeShort(nn.Module):
         self.conv2a = nn.Conv3d(in_channels=64, out_channels=128,
                                 kernel_size=(9, 5, 5), stride=(1, 1, 1), padding=(4, 2, 2))
         self.conv2b = nn.Conv3d(in_channels=128, out_channels=128,
-                                kernel_size=(9, 5, 5), stride=(2, 2, 2), padding=(4, 2, 2))
+                                kernel_size=(9, 5, 5), stride=(1, 2, 2), padding=(4, 2, 2))
         self.bn1a = nn.BatchNorm3d(num_features=64)
         self.bn1b = nn.BatchNorm3d(num_features=64)
         self.bn2a = nn.BatchNorm3d(num_features=128)
@@ -165,6 +178,17 @@ class RODNetBase(nn.Module):
         print("Number of encoder parameters: {}".format(encoder_total_params))
         print("Number of decoder long parameters: {}".format(decoder_total_params)) 
 
+    def print_size_of_model(self):
+        torch.save(self.state_dict(), "temp.p")
+        print('Size (KB):', os.path.getsize("temp.p")/1e3)
+        os.remove('temp.p')
+
+    def print_parameter_type(self, cutoff: int=None):
+        for i, (n, p) in enumerate(self.named_parameters()):
+            print(n, ": ", p.dtype)
+            if i == cutoff:
+                break
+
 class RODNetBranched(nn.Module):
     """
     This architecture is the branched RODNet model.
@@ -190,3 +214,14 @@ class RODNetBranched(nn.Module):
         print("Number of encoder parameters: {}".format(encoder_total_params))
         print("Number of decoder short parameters: {}".format(decoder_short_total_params))
         print("Number of decoder long parameters: {}".format(decoder_long_total_params))
+
+    def print_size_of_model(self):
+        torch.save(self.state_dict(), "temp.p")
+        print('Size (KB):', os.path.getsize("temp.p")/1e3)
+        os.remove('temp.p')
+
+    def print_parameter_type(self, cutoff: int=None):
+        for i, (n, p) in enumerate(self.named_parameters()):
+            print(n, ": ", p.dtype)
+            if i == cutoff:
+                break
