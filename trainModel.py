@@ -36,6 +36,7 @@ class modelHandler():
                 loss_confmap_1.backward(inputs=list(self.net.encoder_base.parameters())+list(self.net.decoder_short.parameters()), retain_graph=True)
                 loss_confmap_2.backward(inputs=list(self.net.decoder_long.parameters()))
                 self.optimizer.step()
+                break
             self.scheduler.step()
             total1loss = total1loss/len(trainLoader)
             total2loss = total2loss/len(trainLoader)
@@ -83,6 +84,7 @@ class baseHandler():
                 totalloss += loss_confmap.item()
                 loss_confmap.backward()
                 self.optimizer.step()
+                break
             self.scheduler.step()
             totalloss = totalloss/len(trainLoader)
             toc = time()
