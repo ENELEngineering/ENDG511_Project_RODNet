@@ -1,5 +1,12 @@
+# Copyright 2024. All Rights Reserved.
+#
+# This source code is provided solely for runtime interpretation by Python.
+# 
+# This python file is used explicitly to meet the project requirements provided
+# in ENDG 511 at the University of Calgary.
+
 from __future__ import annotations
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Union, Tuple
 if TYPE_CHECKING:
     from rodnet.models import (
         RODNetCDC, 
@@ -15,12 +22,12 @@ from rodnet.utils.load_configs import (
     parse_cfgs, 
     update_config_dict
 )
-from tools.prune import (
+from prune import (
     global_unstructured_pruning,
     multi_parameter_unstructured_pruning,
     print_sparsity
 )
-from tools.quantize import (
+from quantize import (
     static_quantization,
     dynamic_quantization
 )
@@ -36,21 +43,47 @@ def print_size_of_model(
             RODNetHGwI, 
             RODNetCDCDCN, 
             RODNetHGDCN, 
-            RODNetHGwIDCN],):
+            RODNetHGwIDCN]):
+    """
+    Print the size of the model in KB.
+
+    Parameters
+    ----------
+        rodnet: Type[nn.Module]
+            The loaded pytorch model to check for model size.
+    """
     torch.save(rodnet.state_dict(), "temp.p")
     print('Size (KB):', os.path.getsize("temp.p")/1e3)
     os.remove('temp.p')
 
-def print_parameters(rodnet: Union[
+def print_parameters(
+        rodnet: Union[
             RODNetCDC, 
             RODNetHG, 
             RODNetHGwI, 
             RODNetCDCDCN, 
             RODNetHGDCN, 
-            RODNetHGwIDCN],):
-    """"""
+            RODNetHGwIDCN]) -> Tuple[int, int]:
+    """
+    Prints the number of parameters at the encoder and decoder portions of
+    the model.
+
+    Parameters
+    ----------
+        rodnet: Type[nn.Module]
+            The loaded pytorch model to check for the number of parameters.
+
+    Returns
+    -------
+        encoder_parameters: int
+            The number of parameters of the encoder.
+
+        decoder_parameters: int
+            The number of parameters of the decoder.
+    """
     encoder_parameters = sum(p.numel() for p in rodnet.cdc.encoder.parameters())
     decoder_parameters = sum(p.numel() for p in rodnet.cdc.decoder.parameters())
+    print(f"{encoder_parameters=}, {decoder_parameters=}")
     return encoder_parameters, decoder_parameters
 
 def print_parameter_type(
@@ -60,7 +93,17 @@ def print_parameter_type(
             RODNetHGwI, 
             RODNetCDCDCN, 
             RODNetHGDCN, 
-            RODNetHGwIDCN],):
+            RODNetHGwIDCN]):
+    """
+    Prints the type of each model parameter, this is to check the 
+    datatype to confirm wether or not the model changed after
+    quantization.
+
+    Parameters
+    ----------
+        rodnet: Type[nn.Module]
+            The loaded pytorch model to check for parameter type.
+    """
     for n, p in rodnet.named_parameters():
         print(n, ": ", p.dtype)
 
@@ -229,6 +272,29 @@ def main():
         action="store_true", 
         help="use noise channel or not"
     )
+    parser.add_argument(
+        '--pruning_type',
+        type=str,
+        choices=["global", "local"],
+        help="The type of unstructured pruning to perform: local or global."
+    )
+    parser.add_argument(
+        '--prune_sparsity',
+        type=float,
+        default=0.2,
+        help="The pruning sparsity to set for pruning the weights."
+    )
+    parser.add_argument(
+        '--quantization_type',
+        type=str,
+        choices=["static", "dynamic"],
+        help="The type of post-training quantization to perform."
+    )
+    parser.add_argument(
+        '--half',
+        action="store_true",
+        help="Perform half precision quantization on the model."
+    )
     parser = parse_cfgs(parser)
     args = parser.parse_args()
 
@@ -255,31 +321,45 @@ def main():
     rodnet = build_model(config_dict, dataset, args.use_noise_channel, checkpoint)
     
     encoder_parameters, decoder_parameters = print_parameters(rodnet)
-    #print(f"Original parameters = {encoder_parameters + decoder_parameters}")
+    print(f"Total Base parameters = {encoder_parameters + decoder_parameters}")
     print_size_of_model(rodnet)
-    #print_parameter_type(rodnet)
+    print_parameter_type(rodnet)
 
     """Pruning Methods"""
-    rodnet = global_unstructured_pruning(rodnet, amount=0.2)
-    #rodnet = multi_parameter_unstructured_pruning(rodnet, 0.2, 0.2)
-    print_sparsity(rodnet)
-    encoder_parameters, decoder_parameters = print_parameters(rodnet)
-    print(f"Pruned parameters = {encoder_parameters + decoder_parameters}")
-    print_size_of_model(rodnet)
+    print("\n...Performing Pruning...")
+    if isinstance(args.pruning_type, str):
+        if args.pruning_type.lower() == "global":
+            rodnet = global_unstructured_pruning(
+                rodnet, amount=args.prune_sparsity)
+        elif args.pruning_type.lower() == "local":
+            rodnet = multi_parameter_unstructured_pruning(
+                rodnet, args.prune_sparsity, args.prune_sparsity)
+        else:
+            raise ValueError(f"Unrecognized pruning type: {args.pruning_type}")
+        print_sparsity(rodnet)
+        encoder_parameters, decoder_parameters = print_parameters(rodnet)
+        print(f"Total Pruned parameters = {encoder_parameters + decoder_parameters}")
+        print_size_of_model(rodnet)
 
-    
     """Precision Decrease"""
-    #rodnet = rodnet.half()
-    #print_size_of_model(rodnet)
+    if args.half:
+        print("\n...Performing Quantization...")
+        rodnet = rodnet.half()
+        print_size_of_model(rodnet)
 
     """Quantization Methods"""
-    #quantized_model = static_quantization(rodnet, config_dict)
-    #quantized_model = dynamic_quantization(rodnet)
-    #print_parameter_type(quantized_model)
-    #print_size_of_model(quantized_model)
-    #print(quantized_model)
-
-    
+    if isinstance(args.quantization_type, str):
+        print("\n...Performing Quantization...")
+        if args.quantization_type.lower() == "static":
+            quantized_model = static_quantization(rodnet, config_dict)
+        elif args.quantization_type.lower() == "dynamic":
+            quantized_model = dynamic_quantization(rodnet)
+        else:
+            raise ValueError(f"Unrecognized quantization type: {args.quantization_type}")
+        
+        print_parameter_type(quantized_model)
+        print_size_of_model(quantized_model)
+        print(quantized_model)
 
 if __name__ == '__main__':
     main()

@@ -1,10 +1,6 @@
 # Copyright 2024. All Rights Reserved.
 #
-# Unauthorized copying of this file, via any medium is strictly prohibited
-# Proprietary and confidential.
-#
 # This source code is provided solely for runtime interpretation by Python.
-# Modifying or copying any source code is explicitly forbidden.
 # 
 # This python file is used explicitly to meet the project requirements provided
 # in ENDG 511 at the University of Calgary.
@@ -17,8 +13,12 @@ import os
 class RODEncodeBase(nn.Module):
     """
     This is the base RodNet encoder architecture.
-    """
 
+    Parameters
+    ----------
+        in_channels: int
+            The number of channels.
+    """
     def __init__(self, in_channels: int=2):
         super(RODEncodeBase, self).__init__()
         
@@ -54,8 +54,12 @@ class RODEncodeBase(nn.Module):
 class RODEncodeShort(nn.Module):
     """
     This is the shortened RodNet encoder architecture.
-    """
 
+    Parameters
+    ----------
+        in_channels: int
+            The number of channels.
+    """
     def __init__(self, in_channels: int=2):
         super(RODEncodeShort, self).__init__()
         
@@ -83,8 +87,12 @@ class RODEncodeShort(nn.Module):
 class RODDecodeBase(nn.Module):
     """
     This is the base RodNet decoder architecture.
-    """
 
+    Parameters
+    ----------
+        in_class: int
+            The number of classes.
+    """
     def __init__(self, n_class: int):
         super(RODDecodeBase, self).__init__()
         self.convt1 = nn.ConvTranspose3d(in_channels=256, out_channels=128,
@@ -106,8 +114,12 @@ class RODDecodeBase(nn.Module):
 class RODDecodeShort(nn.Module):
     """
     This is the shortened RodNet decoder branch architecture.
-    """
 
+    Parameters
+    ----------
+        in_class: int
+            The number of classes.
+    """
     def __init__(self, n_class: int):
         super(RODDecodeShort, self).__init__()
         self.convt1 = nn.ConvTranspose3d(in_channels=128, out_channels=64,
@@ -126,8 +138,12 @@ class RODDecodeShort(nn.Module):
 class RODDecodeLong(nn.Module):
     """
     This is the elongated RodNet decoder branch architecture.
-    """
 
+    Parameters
+    ----------
+        in_class: int
+            The number of classes.
+    """
     def __init__(self, n_class: int):
         super(RODDecodeLong, self).__init__()
         self.maxp = nn.MaxPool3d((2,1,1), stride = (2,1,1))
@@ -159,8 +175,15 @@ class RODDecodeLong(nn.Module):
 class RODNetBase(nn.Module):
     """
     This architecture is the base RODNet model.
-    """
 
+    Parameters
+    ----------
+        in_channels: int
+            The number of channels.
+
+        in_class: int
+            The number of classes.
+    """
     def __init__(self, in_channels: int, n_class: int):
         super(RODNetBase, self).__init__()
         self.encoder = RODEncodeBase(in_channels=in_channels)
@@ -172,6 +195,9 @@ class RODNetBase(nn.Module):
         return x
     
     def print_summary(self):
+        """
+        Prints the number of encoder and decoder parameters of the model.
+        """
         encoder_total_params = sum(p.numel() for p in self.encoder.parameters())
         decoder_total_params = sum(p.numel() for p in self.decoder.parameters())
 
@@ -179,11 +205,18 @@ class RODNetBase(nn.Module):
         print("Number of decoder long parameters: {}".format(decoder_total_params)) 
 
     def print_size_of_model(self):
+        """
+        Prints the size of the model in KB.
+        """
         torch.save(self.state_dict(), "temp.p")
         print('Size (KB):', os.path.getsize("temp.p")/1e3)
         os.remove('temp.p')
 
     def print_parameter_type(self, cutoff: int=None):
+        """
+        Prints the datatype of each parameter in the model. For
+        check quantization datatype conversion. 
+        """
         for i, (n, p) in enumerate(self.named_parameters()):
             print(n, ": ", p.dtype)
             if i == cutoff:
@@ -192,8 +225,15 @@ class RODNetBase(nn.Module):
 class RODNetBranched(nn.Module):
     """
     This architecture is the branched RODNet model.
-    """
 
+    Parameters
+    ----------
+        in_channels: int
+            The number of channels.
+
+        in_class: int
+            The number of classes.
+    """
     def __init__(self, in_channels: int, n_class: int):
         super(RODNetBranched, self).__init__()
         self.encoder = RODEncodeShort(in_channels=in_channels)
@@ -207,6 +247,10 @@ class RODNetBranched(nn.Module):
         return x1, x2
     
     def print_summary(self):
+        """
+        Prints the total number of parameters in the encoder and 
+        two branches of the decoder.
+        """
         encoder_total_params = sum(p.numel() for p in self.encoder.parameters())
         decoder_short_total_params = sum(p.numel() for p in self.decoder_short.parameters())
         decoder_long_total_params = sum(p.numel() for p in self.decoder_long.parameters())
@@ -216,11 +260,18 @@ class RODNetBranched(nn.Module):
         print("Number of decoder long parameters: {}".format(decoder_long_total_params))
 
     def print_size_of_model(self):
+        """
+        Prints the size of the model in KB.
+        """
         torch.save(self.state_dict(), "temp.p")
         print('Size (KB):', os.path.getsize("temp.p")/1e3)
         os.remove('temp.p')
 
     def print_parameter_type(self, cutoff: int=None):
+        """
+        Prints the datatype of each parameter in the model. For
+        check quantization datatype conversion. 
+        """
         for i, (n, p) in enumerate(self.named_parameters()):
             print(n, ": ", p.dtype)
             if i == cutoff:

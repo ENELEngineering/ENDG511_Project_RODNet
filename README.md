@@ -23,6 +23,26 @@ The increasing trend of autonomous vehicle operations provides the prospects of 
 
 The motivations behind this project is to modify the RODNet architectures to implement the concepts learned in the course for reducing the model size but maintaining its accuracy such as pruning, quantization, and clustering. Secondly to increase the model's speed by implementing a multibranching architecture based around RODNet.  
 
+# Background
+
+## Challenges
+
+As described in the project report, there were challenges that was encountered during the 
+pruning and quantization of the base RODNet architecture using PyTorch. The source
+code showing these efforts are under /pytorch_challenges. 
+
+The subdirectory /primary_effort shows the initial efforts or attempts at pruning 
+and quantizing the RODNet model.
+
+The subdirectory /secondary_effort shows the second attempt at pruning and 
+quantizing the RODNet model.
+
+Our future work will also
+involve revisiting this effort in hopes to modify to perform proper pruning and 
+quantization of the model that yeilds expected results. 
+
+## 
+
 # Setup
 
 This section shows the steps for setting up the project to make use of the scripts provided.

@@ -1,10 +1,6 @@
 # Copyright 2024. All Rights Reserved.
 #
-# Unauthorized copying of this file, via any medium is strictly prohibited
-# Proprietary and confidential.
-#
 # This source code is provided solely for runtime interpretation by Python.
-# Modifying or copying any source code is explicitly forbidden.
 # 
 # This python file is used explicitly to meet the project requirements provided
 # in ENDG 511 at the University of Calgary.
@@ -29,11 +25,28 @@ import os
 
 class ValidateBranchedHandler():
     """
-    Validate Branch Models
+    Validate Branch Models.
+
+    Parameters
+    ----------
+        net: RODNetBranched
+            The architecture of the branched model.
+
+        dataset: CRUW
+            The dataset used to validate the model.
+
+        config_dict: dict
+            The model configuration files.
+
+        criterion: BCELoss
+            A binary cross entropy object.
+
+        device: torch.device
+            The type of device to use.
     """
     def __init__(
             self, 
-            net: RODNetBase, 
+            net: RODNetBranched, 
             dataset: CRUW,
             config_dict: dict,
             criterion: Union[torch.nn.modules.loss.BCELoss], 
@@ -80,7 +93,17 @@ class ValidateBranchedHandler():
             validation_loader: DataLoader,
             validation_dir: str=""
         ):
-        
+        """
+        The validation method.
+
+        Parameters
+        ----------
+            validation_loader: DataLoader
+                Provides iterator of the dataset to validate the model.
+
+            validation_dir: str
+                The path to save the validation detections.
+        """
         with torch.no_grad():
             for iter, data_dict in enumerate(validation_loader):
                 print(f"{iter=}")
@@ -169,6 +192,14 @@ class ValidateBranchedHandler():
                     self.metrics["validation"]["early_exit_count"] += 1
         
     def save_metrics(self, results_dir: str=""):
+        """
+        Save the metrics as a file.
+
+        Parameters
+        ----------
+            results_dir: str
+                The path to save the metric files. 
+        """
         save_model_path = os.path.join(results_dir, "validation_metrics_branch.json")
         with open(save_model_path, 'w') as fp:
             json.dump(self.metrics, fp)
@@ -176,7 +207,24 @@ class ValidateBranchedHandler():
 
 class ValidateBaseHandler():
     """
-    Validate Base Models
+    Validate Base Models.
+
+    Parameters
+    ----------
+        net: RODNetBase
+            The architecture of the branched model.
+
+        dataset: CRUW
+            The dataset used to validate the model.
+
+        config_dict: dict
+            The model configuration files.
+
+        criterion: BCELoss
+            A binary cross entropy object.
+
+        device: torch.device
+            The type of device to use.
     """
     def __init__(
             self, 
@@ -212,7 +260,17 @@ class ValidateBaseHandler():
             validation_loader: DataLoader,
             validation_dir: str=""
         ):
-        
+        """
+        The validation method.
+
+        Parameters
+        ----------
+            validation_loader: DataLoader
+                Provides iterator of the dataset to validate the model.
+
+            validation_dir: str
+                The path to save the validation detections.
+        """
         with torch.no_grad():
             for iter, data_dict in enumerate(validation_loader):
                 print(f"{iter=}")
@@ -275,6 +333,14 @@ class ValidateBaseHandler():
                 self.metrics["validation"]["ols"].append(olss_all)
         
     def save_metrics(self, results_dir: str=""):
+        """
+        Save the metrics as a file.
+
+        Parameters
+        ----------
+            results_dir: str
+                The path to save the metric file.
+        """
         save_model_path = os.path.join(results_dir, "validation_metrics_base.json")
         with open(save_model_path, 'w') as fp:
             json.dump(self.metrics, fp)

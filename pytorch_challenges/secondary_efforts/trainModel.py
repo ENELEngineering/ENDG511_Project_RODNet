@@ -1,10 +1,6 @@
 # Copyright 2024. All Rights Reserved.
 #
-# Unauthorized copying of this file, via any medium is strictly prohibited
-# Proprietary and confidential.
-#
 # This source code is provided solely for runtime interpretation by Python.
-# Modifying or copying any source code is explicitly forbidden.
 # 
 # This python file is used explicitly to meet the project requirements provided
 # in ENDG 511 at the University of Calgary.
@@ -23,6 +19,29 @@ import os
 class TrainBranchedHandler():
     """
     This class handles training of branched models.
+
+    Parameters
+    ----------
+        net: RODNetBranched
+            The architecture of the base model.
+
+        criterion: BCELoss
+            A binary cross entropy object.
+
+        optimizer: Adam
+            An Adam optimizer object.
+
+        device: torch.device
+            The type of device to use.
+
+        scheduler: StepLR
+            The scheduler object to use.
+
+        num_epochs: int
+            The number of epochs to run training.
+
+        half: bool
+            Set to provide half precision of the model. 
     """
     def __init__(
             self, 
@@ -64,7 +83,17 @@ class TrainBranchedHandler():
             train_loader: DataLoader, 
             model_dir: str= ""
         ):
+        """
+        The training method.
 
+        Parameters
+        ----------
+            train_loader: DataLoader
+                Provides iterator of the dataset to train the model.
+
+            model_dir: str
+                The path to save the model training files. 
+        """
         for epoch in range(self.NUM_EPOCHS):
             total1loss, total2loss, totalloss = 0, 0, 0
 
@@ -124,7 +153,15 @@ class TrainBranchedHandler():
 
         return self.net, self.history
     
-    def save_metrics(self, results_dir=""):
+    def save_metrics(self, results_dir: str=""):
+        """
+        Saves the training metrics.
+
+        Parameters
+        ----------
+            results_dir: str
+                The path to save the metric files.
+        """
         save_model_path = os.path.join(results_dir, "training_metrics_branched.json")
         with open(save_model_path, 'w') as fp:
             json.dump(self.history, fp)
@@ -144,6 +181,32 @@ class TrainBaseHandler():
             num_epochs: int=1,
             half: bool=False
         ):
+        """
+        Provides training methods of the Base model.
+
+        Parameters
+        ----------
+            net: RODNetBase
+                The architecture of the base model.
+
+            criterion: BCELoss
+                A binary cross entropy object.
+
+            optimizer: Adam
+                An Adam optimizer object.
+
+            device: torch.device
+                The type of device to use.
+
+            scheduler: StepLR
+                The scheduler object to use.
+
+            num_epochs: int
+                The number of epochs to run training.
+
+            half: bool
+                Set to provide half precision of the model. 
+        """
         self.net = net
         self.criterion = criterion
         self.optimizer = optimizer
@@ -163,7 +226,17 @@ class TrainBaseHandler():
             train_loader: DataLoader, 
             model_dir: str= ""
         ):
+        """
+        The training method.
 
+        Parameters
+        ----------
+            train_loader: DataLoader
+                Provides iterator of the dataset to train the model.
+
+            model_dir: str
+                The path to save the model training files. 
+        """
         for epoch in range(self.NUM_EPOCHS):
             totalloss = 0
 
@@ -205,7 +278,15 @@ class TrainBaseHandler():
 
         return self.net, self.history
 
-    def save_metrics(self, results_dir=""):
+    def save_metrics(self, results_dir: str=""):
+        """
+        Saves the training metrics.
+
+        Parameters
+        ----------
+            results_dir: str
+                The path to save the metric files.
+        """
         save_model_path = os.path.join(results_dir, "training_metrics_base.json")
         with open(save_model_path, 'w') as fp:
             json.dump(self.history, fp)

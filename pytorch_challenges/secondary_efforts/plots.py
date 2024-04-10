@@ -1,10 +1,6 @@
 # Copyright 2024. All Rights Reserved.
 #
-# Unauthorized copying of this file, via any medium is strictly prohibited
-# Proprietary and confidential.
-#
 # This source code is provided solely for runtime interpretation by Python.
-# Modifying or copying any source code is explicitly forbidden.
 # 
 # This python file is used explicitly to meet the project requirements provided
 # in ENDG 511 at the University of Calgary.
@@ -17,8 +13,23 @@ def plot_loss(model_name: str, epochs: list, losses: list, labels: list):
     """
     Parameters
     ----------
-        loss: list
-            Ensure this contains [[loss_array], [loss_array], ...]
+        model_name: str
+            The name of the model
+
+        epochs: list
+            The epoch numbers.
+
+        losses: list
+            Ensure this contains [[loss_array], [loss_array], ...].
+
+        labels: list
+            Same length as the losses and epochs array, but provides
+            labels to indicate which loss array corresponds to which branch.
+
+    Returns
+    -------
+        fig: Figure
+            The plot to draw.
     """
     fig, ax = plt.subplots(1, 1, figsize=(9, 6), tight_layout=True)
     for loss, label in zip(losses, labels):
@@ -31,6 +42,37 @@ def plot_loss(model_name: str, epochs: list, losses: list, labels: list):
     return fig
 
 def plot_base_pdf(model_name: str, metrics: dict):
+    """
+    Plots the PDF of the base model.
+
+    Parameters
+    ----------
+        model_name: str
+            The name of the model.
+
+        metrics: dict
+            This is in the format.
+
+            {
+                "validation": {
+                    "class_0": {
+                        "loss": []
+                    },
+                    "class_1": {
+                        "loss": []
+                    },
+                    "class_2": {
+                        "loss": []
+                    },
+                    "ols": []
+            }
+        }
+
+    Returns
+    -------
+        fig: Figure
+            The plot to draw.
+    """
     fig, ax = plt.subplots(1, 1, figsize=(9, 6), tight_layout=True)
     ax.hist(np.round(
         np.array(metrics["validation"]["class_0"]["loss"]),3), 
@@ -50,6 +92,52 @@ def plot_base_pdf(model_name: str, metrics: dict):
     return fig
 
 def plot_branch_pdf(model_name: str, metrics: dict):
+    """
+    Plots the PDF of the branched model.
+
+    Parameters
+    ----------
+        model_name: str
+            The name of the model.
+
+        metrics: dict
+            This is in the format
+
+            {
+                "validation": {
+                    "short": {
+                        "class_0": {
+                            "loss": []
+                        },
+                        "class_1": {
+                            "loss": []
+                        },
+                        "class_2": {
+                            "loss": []
+                        }
+                    },
+                    "long": {
+                        "class_0": {
+                            "loss": []
+                        },
+                        "class_1": {
+                            "loss": []
+                        },
+                        "class_2": {
+                            "loss": []
+                        }
+                    },
+                    "ols_1": [],
+                    "ols_2": [],
+                    "early_exit_count": 0
+                }
+            }
+
+    Returns
+    -------
+        fig: Figure
+            The plot to draw.
+    """
     fig, ax = plt.subplots(nrows=1, ncols=2, figsize=(9, 6), tight_layout=True)
     ax[0].hist(np.round(
         np.array(metrics["validation"]["short"]["class_0"]["loss"]),3), 

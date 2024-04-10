@@ -1,3 +1,10 @@
+# Copyright 2024. All Rights Reserved.
+#
+# This source code is provided solely for runtime interpretation by Python.
+# 
+# This python file is used explicitly to meet the project requirements provided
+# in ENDG 511 at the University of Calgary.
+
 from __future__ import annotations
 from typing import TYPE_CHECKING, Union
 if TYPE_CHECKING:
@@ -29,11 +36,19 @@ def dynamic_quantization(
         rodnet: Type[nn.Module]
             This is a specific RodNet architecture depending on the model
             configurations.
+
+    Returns
+    -------
+        rodnet: Type[nn.Module]
+            The model with the layers dynamically quantized.
     """
     quantized_model = torch.quantization.quantize_dynamic(
         rodnet,
         dtype=torch.quint8
     )
+    # The code below was unsuccessful as the intention was to separately
+    # quantize the two halves of the model architecture.
+
     # quantized_encoder = torch.quantization.quantize_dynamic(
     #     rodnet.cdc.encoder,
     #     {torch.nn.Conv3d},
@@ -68,6 +83,11 @@ def static_quantization(
         rodnet: Type[nn.Module]
             This is a specific RodNet architecture depending on the model
             configurations.
+
+    Returns
+    -------
+        rodnet: Type[nn.Module]
+            The model with the layers statically quantized.
     """
     # Fuse layers and prepare the model for quantization
     qmodel = torch.quantization.fuse_modules(
@@ -79,10 +99,6 @@ def static_quantization(
         ["cdc.encoder.conv2b", 'cdc.encoder.bn2b'],
         ["cdc.encoder.conv3a", 'cdc.encoder.bn3a'],
         ["cdc.encoder.conv3b", 'cdc.encoder.bn3b']
-        # 'cdc.decoder.convt1', 
-        # 'cdc.decoder.convt2', 
-        # 'cdc.decoder.convt3', 
-        # 'cdc.decoder.prelu.weight'
         ]
     )
 
@@ -95,19 +111,8 @@ def static_quantization(
     # For static quantization, you can use torch.quantization.convert(model)
     #calibrated_model = torch.quantization.calibrate(qmodel, config_dict)
     
-
     # Convert the calibrated model to a quantized model
     quantized_model = torch.quantization.convert(qmodel)
     rodnet.cdc.encoder = quantized_model
     return rodnet
-    # Save the quantized model
-    #torch.save(quantized_model.state_dict(), "quantized_model.pth")
-
-       
-    # rodnet.cdc.encoder.qconfig = torch.quantization.get_default_qconfig('fbgemm')
-    # torch.quantization.prepare(
-    #     rodnet.cdc.encoder, inplace=True
-    # )
-    # torch.quantization.convert(
-    #     rodnet.cdc.encoder, inplace=True
-    # )
+    

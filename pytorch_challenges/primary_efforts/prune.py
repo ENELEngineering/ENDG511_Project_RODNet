@@ -1,3 +1,9 @@
+# Copyright 2024. All Rights Reserved.
+#
+# This source code is provided solely for runtime interpretation by Python.
+# 
+# This python file is used explicitly to meet the project requirements provided
+# in ENDG 511 at the University of Calgary.
 
 from __future__ import annotations
 from typing import TYPE_CHECKING, Union
@@ -139,6 +145,11 @@ def multi_parameter_unstructured_pruning(
 
         amount_3d__trans_conv: float
             The sparsity amount to prune the 3D transpose convolutional layers.
+
+    Returns
+    -------
+        rodnet: Type[nn.Module]
+            The model with the layers pruned and removed.
     """
     for name, module in rodnet.named_modules():
         # Prune amount_3d_conv % of connections in all 3D-conv layers
@@ -173,6 +184,11 @@ def global_unstructured_pruning(
 
         amount: float
             The sparsity amount to prune the model.
+
+    Returns
+    -------
+        rodnet: Type[nn.Module]
+            The model with the layers pruned and removed.
     """
     parameters = (
         (rodnet.cdc.encoder.conv1a, "weight"),
