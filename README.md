@@ -21,6 +21,116 @@ conventional camera-based object detection in cases of low visibility.
 Please see /docs/ENDG511_project_report_radar.pdf for the problem/use-case and
 more details regarding the project.
 
+# Setup
+
+The following steps shows setting up the project repository.
+
+1) Run the following command to clone the project repository.
+
+```shell
+git clone https://github.com/ENELEngineering/ENDG511_Project_RODNet.git
+```
+
+[...]
+
+# Radar-Based Object Detection
+
+## Installation Instructions
+
+### Cloning RODNet and CRUW directories
+- Change the current working directory to "radar_detections" with this command.
+
+```shell
+cd radar_detections
+```
+
+- Clone the RODNet repository with this command 
+
+```shell
+git clone https://github.com/yizhou-wang/RODNet.git
+```
+
+- Clone the cruw-devkit repository with this command. 
+
+```shell
+git clone https://github.com/yizhou-wang/cruw-devkit.git
+```
+
+- In case it is not installed, [install Anaconda](https://docs.anaconda.com/free/anaconda/install/index.html).
+
+## Create a new conda environment
+- Run the following lines of code in the terminal to setup the RODNet environment with the required dependencies.
+
+```shell
+conda create -n rodnet python=3.11 -y
+conda activate rodnet
+```
+
+For MACOS, install PyTorch using the following command. 
+
+```shell
+pip3 install torch torchvision torchaudio
+```
+
+For Windows, install PyTorch with CUDA [only for machine with recognized NVIDIA GPUs]
+following this [guideline](https://medium.com/@harunijaz/a-step-by-step-guide-to-installing-cuda-with-pytorch-in-conda-on-windows-verifying-via-console-9ba4cd5ccbef). 
+
+Other alternate installations include the following command.
+
+```shell
+pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+```
+
+The following versions were used in a Window machines during testing.
+
+* Python: 3.11.8
+* Cuda: 11.8
+* torch: 2.2.1
+
+Verify that Cuda is installed and PyTorch recognizes this installation using the command below.
+
+```python
+>> print(torch.cuda.is_available())
+>> True
+```
+
+Run the rest of the installation commands below to complete the setup.
+
+```shell
+pip install -e .
+cd cruw-devkit
+pip install .
+cd ..
+pip install numpy
+```
+    
+
+## Downloading the dataset
+- Use the following google drive link to download the "ROD2024" folder as a subdirectory under "radar_detections": https://drive.google.com/drive/folders/1XXXKaU6_MAtqp9imyqpOEVu2vbvuqaCn?usp=sharing
+- Move the downloaded ROD2024 folder inside the "radar_detections" main folder
+
+## Configuration file
+config_rodnet_cdc_win16.py is the file that contains the path to the dataset folder and other relevant variables, such as the number of epochs and batch size required by the custom CRUW dataset.
+
+## Processing the dataset
+- change the working directory to RODNet-master:
+cd RODNet-master
+- Run the follow line of code in the terminal: python tools/prepare_dataset/prepare_data.py --config ../config_rodnet_cdc_win16.py --data_root ../ROD2024 --split train --out_data_dir ../data_final_converted
+
+## Running the final_project.ipynb
+This is the main jupyter notebook used for the radar object detection.
+
+- There are two ways to run this script:
+    - Running the entire script which involves training and validation.
+        - In the section Model Validation/testing. Comment the 3 and 4 statments and either uncomment 1 or 2 depending on the avaibility of GPU. For base model (rod_v0) and for the multibranch model (rod_v1).
+    - Only running the validation and using the provided trained models as .pkl files
+        - Download the "trained_models" folder containing .pkl files as a subdirectory under "radar_detections": https://drive.google.com/drive/folders/1GW93bPf7UZ-OhiEhrsuTuxwWYB4yqbbL?usp=sharing 
+        - Skip the "Model training" section by not running the 8 cells inside it.
+        - In the section Model Validation/testing. Comment the 1 and 2 statments and either uncomment 3 or 4 depending on the avaibility of GPU. For base model (rod_v0) and for the multibranch model (rod_v1).
+
+## trainModel.py and getModel.py
+The trainModel.py contains the function declaration for the training schedule. And getModel.py contains the class definition for the base model and the multibranch model.
+
 ## Challenges
 
 As described in the project report, there were challenges that was encountered during the 
@@ -37,87 +147,8 @@ Our future work will also
 involve revisiting this effort in hopes to modify to perform proper pruning and 
 quantization of the model that yeilds expected results. 
 
-# Radar-Based Detections
-
-The efforts 
 
 
-## Setup Radar Detection
-
-This section shows the steps for setting up the project to make use of the scripts provided.
-
-1) Clone the [RODNet Repository](https://github.com/yizhou-wang/RODNet). 
-2) [Install Anaconda](https://docs.anaconda.com/free/anaconda/install/index.html).
-3) Follow the RODNet repository's installation guidelines. However, encountered a few issues following the guidelines for installing PyTorch with Cuda. This [guideline](https://medium.com/@harunijaz/a-step-by-step-guide-to-installing-cuda-with-pytorch-in-conda-on-windows-verifying-via-console-9ba4cd5ccbef) for installing PyTorch with Cuda worked seamlessly.
- 
-The following environment was used for testing. 
-
-**Environment**
-
-* Python: 3.11.8
-* Cuda: 11.8
-* torch: 2.2.1
-
-Verify that Cuda is installed and PyTorch recognizes this installation.
-
-```python
->> print(torch.cuda.is_available())
->> True
-```
-
-## Dataset Partitioning
-
-We ran into difficulties testing the model which was suspected to be based around 
-missing test annotations in the provided RODNet dataset. 
-The [issue](https://github.com/yizhou-wang/RODNet/issues/78) was also raised in the 
-RODNet repository.
-
-The actual error that was generated when running test.py for model testing was:
-
-```shell
-Length of testing data: 111
-Traceback (most recent call last):
-  File "<frozen runpy>", line 198, in _run_module_as_main
-  File "<frozen runpy>", line 88, in _run_code
-  File "\RODNet\tools\test.py", line 184, in <module>
-    data = data_dict['radar_data']
-           ~~~~~~~~~^^^^^^^^^^^^^^
-KeyError: 'radar_data'
-```
-
-However, replacing the testing samples with training samples resolved the issue. 
-The decision was then to partition the training samples into train and test since 
-the training samples provided were complete that allowed to run the three tasks: 
-train, test, eval.
-
-The final partitioned dataset structure is as follows:
-
-```shell
-dataset base directory
-        |---calib
-        |     |-----2019_05_09
-        |     |-----2019_09_29
-        |---annotations
-        |     |-----test
-        |     |-----train
-        |---sequences
-        |     |-----test
-        |             |----2019_04_30_MLMS002
-        |             |----2019_09_29_ONRD006
-        |     |-----train
-        |             |----2019_04_30_PM2S004
-        |             |----2019_04_09_BMS1000
-        |             |----2019_04_30_PBMS002
-        |             |----2019_04_30_PCMS001
-        |             |----2019_04_30_MLMS000
-        |             |----2019_05_29_PBMS007
-        |             |----2019_04_09_PMS1000
-        |             |----2019_05_29_BCMS000
-        |             |----2019_09_29_ONRD002
-        |             |----2019_05_09_CM1S004
-```
-
-This dataset is provided under the following link: 
 
 ## RODNet Configurations
 
