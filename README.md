@@ -1,7 +1,10 @@
 # ENDG511 Project
 
 This repository shows the implementation of the concepts Tiny and Fast AI using
-PyTorch to continue the work behind *Radar Object Detection [RODNet](https://github.com/yizhou-wang/RODNet).*
+PyTorch, Tensorflow, and YoloV5 to continue the work behind 
+*Radar Object Detection [RODNet](https://github.com/yizhou-wang/RODNet).* and aswell
+as provide performance comparison between radar-based object detection and 
+conventional camera-based object detection in cases of low visibility.
 
 # Overview
 
