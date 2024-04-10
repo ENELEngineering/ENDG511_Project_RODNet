@@ -1,0 +1,6 @@
+deepview-validator~=3.2.2
+torchvision~=0.17.0
+opencv-python~=4.9.0
+pillow~=10.2.0
+numpy~=1.26.4
+tensorflow~=2.15.0
