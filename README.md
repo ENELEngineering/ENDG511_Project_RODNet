@@ -31,7 +31,11 @@ The following steps shows setting up the project repository.
 git clone https://github.com/ENELEngineering/ENDG511_Project_RODNet.git
 ```
 
-[...]
+2) Upgrade pip with the following command.
+
+```shell
+python.exe -m pip install --upgrade pip
+```
 
 # Radar-Based Object Detection
 
@@ -156,7 +160,7 @@ train_cfg = dict(
 )
 ```
 
-## Processing the dataset
+## Processing the Dataset
 - change the current working directory to "RODNet".
 
 - Run the follow line of code in the terminal.
@@ -165,7 +169,7 @@ train_cfg = dict(
 python tools/prepare_dataset/prepare_data.py --config ../config_rodnet_cdc_win16.py --data_root ../ROD2024 --split train --out_data_dir ../data_final_converted
 ```
 
-## Running the final_project.ipynb
+## Running the final_project.ipynb Notebook
 This is the main jupyter notebook used for the radar object detection.
 
 - There are two ways to run this script:
@@ -203,19 +207,54 @@ involve revisiting this effort in hopes to modify to perform proper pruning and
 quantization of the model that yeilds expected results. 
 
 
-# Setup Camera Detection
+# Camera-Based Object Detection
 
+## Installation Instructions 
 
+1) Change directory to the camera-based detection portion of the project.
 
+```shell
+cd camera_detections
+```
+
+2) If an environment is not currently activated, do so by setting up a python virtual environment.
+
+```shell
+python -m venv env
+```
+
+Activate the environment with windows using the command.
+
+```shell
+<path to the environment>\Scripts\activate
+```
+
+Activate the environment with a Linux interface using the command.
+
+```shell
+source <path to the environment>\bin\activate
+```
+
+3) Install the requirements using the command below.
+
+```shell
+pip install -r requirements.txt
+```
+
+## Running the final_project.ipynb Notebook
+
+This is the main jupyter notebook used for the camera object detection.
+
+The instructions or process for running the script is already provided in the script.
 
 # Results and Analysis
 
 [TODO]: Provide link to point to a location storing the saved model, results, and dataset used.
 
-
-# Sample Commands
-
-
 # References
 
 * The work done in this repository [RODNet](https://github.com/yizhou-wang/RODNet/tree/master) was continued in this project to implement multibranching, pruning, quantization, and clustering methods.
+
+* [YoloV5](https://github.com/ultralytics/yolov5) was used to train the camera-based detection models.
+
+* [Deepview-Validator](https://support.deepviewml.com/hc/en-us/articles/11511279358221-How-to-Evaluate-Computer-Vision-Models-with-Deepview-Validator) was used to validate the camera-based detection models.
