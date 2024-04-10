@@ -1,6 +1,6 @@
 # ENDG511 Project
 
-This repository shows the implementation of the concepts Tiny and Fast AI using
+This repository shows the implementation of the concepts TinyAI and FastAI using
 PyTorch, Tensorflow, and YoloV5 to continue the work behind 
 *Radar Object Detection [RODNet](https://github.com/yizhou-wang/RODNet).* and aswell
 as provide performance comparison between radar-based object detection and 
@@ -8,7 +8,7 @@ conventional camera-based object detection in cases of low visibility.
 
 # Overview
 
-- [Problem/Use Case](#problemuse-case)
+- [Background](#background)
 - [Setup](#setup)
     - [Dataset Partitioning](#dataset-partitioning)
     - [Configurations](#configurations)
@@ -16,37 +16,33 @@ conventional camera-based object detection in cases of low visibility.
 - [Sample Commands](#sample-commands)
 - [References](#references)
 
-# Problem/Use Case
-
-There is a limitation of utilizing conventional camera-based sensing object detection networks under conditions of weak/strong lighting during night operations or very bright environments or perhaps poor weather conditions such as fog, smoke, dust, storms, and rain which can lead to little/high exposure or blur/occluded images.
-
-The intention of utilizing radar-based detection on top of camera-based detections is to take advantage of radar’s increase in reliability to sense objects during harsh weather conditions. Frequency modulated continuous wave (FMCW) radar operates in the millimeter-wave (MMW) band (30-300GHz) which is lower than visible light, but gives it properties of increase penetration through fog, smoke, and dust and increased range detection capabilities due to the large bandwidth and increased working frequency.
-
-The increasing trend of autonomous vehicle operations provides the prospects of utilizing radar-based object detection technology to aid in smarter decisions in autonomous vehicles by providing more accurate detections under poor visibility conditions where camera-based sensing accuracy could decline. 
-
-The motivations behind this project is to modify the RODNet architectures to implement the concepts learned in the course for reducing the model size but maintaining its accuracy such as pruning, quantization, and clustering. Secondly to increase the model's speed by implementing a multibranching architecture based around RODNet.  
-
 # Background
+
+Please see /docs/ENDG511_project_report_radar.pdf for the problem/use-case and
+more details regarding the project.
 
 ## Challenges
 
 As described in the project report, there were challenges that was encountered during the 
 pruning and quantization of the base RODNet architecture using PyTorch. The source
-code showing these efforts are under /pytorch_challenges. 
+code showing these efforts are under `/radar_detections/pytorch_challenges`. 
 
-The subdirectory /primary_effort shows the initial efforts or attempts at pruning 
+The subdirectory `/primary_efforts` shows the initial efforts or attempts at pruning 
 and quantizing the RODNet model.
 
-The subdirectory /secondary_effort shows the second attempt at pruning and 
+The subdirectory `/secondary_efforts` shows the second attempt at pruning and 
 quantizing the RODNet model.
 
 Our future work will also
 involve revisiting this effort in hopes to modify to perform proper pruning and 
 quantization of the model that yeilds expected results. 
 
-## 
+# Radar-Based Detections
 
-# Setup
+The efforts 
+
+
+## Setup Radar Detection
 
 This section shows the steps for setting up the project to make use of the scripts provided.
 
@@ -69,11 +65,12 @@ Verify that Cuda is installed and PyTorch recognizes this installation.
 >> True
 ```
 
-Once the repository is cloned, the scripts provided were copied under `/tools/` of the RODNet repository.
-
 ## Dataset Partitioning
 
-We ran into difficulties testing the model which was suspected to be based around missing test annotations in the provided RODNet dataset. The [issue](https://github.com/yizhou-wang/RODNet/issues/78) was also raised in the RODNet repository.
+We ran into difficulties testing the model which was suspected to be based around 
+missing test annotations in the provided RODNet dataset. 
+The [issue](https://github.com/yizhou-wang/RODNet/issues/78) was also raised in the 
+RODNet repository.
 
 The actual error that was generated when running test.py for model testing was:
 
@@ -88,7 +85,10 @@ Traceback (most recent call last):
 KeyError: 'radar_data'
 ```
 
-However, replacing the testing samples with training samples resolved the issue. The decision was then to partition the training samples into train and test since the training samples provided were complete that allowed to run the three tasks: train, test, eval.
+However, replacing the testing samples with training samples resolved the issue. 
+The decision was then to partition the training samples into train and test since 
+the training samples provided were complete that allowed to run the three tasks: 
+train, test, eval.
 
 The final partitioned dataset structure is as follows:
 
@@ -117,7 +117,9 @@ dataset base directory
         |             |----2019_05_09_CM1S004
 ```
 
-## Configurations
+This dataset is provided under the following link: 
+
+## RODNet Configurations
 
 The configuration final used throughout this project is: `/configs/config_rodnet_cdc_win16.py`.
 
@@ -162,6 +164,11 @@ train_cfg = dict(
     save_step=10000,
 )
 ```
+
+# Setup Camera Detection
+
+
+
 
 # Results and Analysis
 
