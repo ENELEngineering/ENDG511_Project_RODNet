@@ -10,10 +10,20 @@ conventional camera-based object detection in cases of low visibility.
 
 - [Background](#background)
 - [Setup](#setup)
-    - [Dataset Partitioning](#dataset-partitioning)
-    - [Configurations](#configurations)
-- [Results and Analysis](#results-and-analysis)
-- [Sample Commands](#sample-commands)
+- [Radar-Based Object Detection](#radar-based-object-detection)
+    - [Installation Instructions](#installation-instructions)
+        - [Cloning RODNet and CRUW Repositories](#cloning-rodnet-and-cruw-repositories)
+        - [Create a New Conda Environment](#create-a-new-conda-environment)
+    - [Downloading the Dataset](#downloading-the-dataset)
+    - [Configuration File](#configuration-file)
+    - [Processing the Dataset](#processing-the-dataset) 
+    - [Running the Jupyter Notebook](#running-the-final_projectipynb-notebook)
+    - [Python File Descriptions](#trainmodelpy-and-getmodelpy)
+    - [RODNet Challenges](#challenges)
+- [Camera-Based Object Detection](#camera-based-object-detection)
+    - [Installation Instructions](#installation-instructions-1)
+    - [Running the Jupyter Notebook](#running-the-final_projectipynb-notebook-1)
+    - [Camera-Based Detection Files](#camera-based-detection-files)
 - [References](#references)
 
 # Background
@@ -41,7 +51,7 @@ python.exe -m pip install --upgrade pip
 
 ## Installation Instructions
 
-### Cloning RODNet and CRUW directories
+### Cloning RODNet and CRUW Repositories
 - Change the current working directory to "radar_detections" with this command.
 
 ```shell
@@ -62,7 +72,7 @@ git clone https://github.com/yizhou-wang/cruw-devkit.git
 
 - In case it is not installed, [install Anaconda](https://docs.anaconda.com/free/anaconda/install/index.html).
 
-### Create a new conda environment
+### Create a New Conda Environment
 - Run the following lines of code in the terminal to setup the RODNet environment with the required dependencies.
 
 ```shell
@@ -206,7 +216,6 @@ Our future work will also
 involve revisiting this effort in hopes to modify to perform proper pruning and 
 quantization of the model that yeilds expected results. 
 
-
 # Camera-Based Object Detection
 
 ## Installation Instructions 
@@ -247,9 +256,10 @@ This is the main jupyter notebook used for the camera object detection.
 
 The instructions or process for running the script is already provided in the script.
 
-# Results and Analysis
+## Camera-Based Detection Files
 
-[TODO]: Provide link to point to a location storing the saved model, results, and dataset used.
+The link that stores the saved models, results, and dataset used can be found
+here.
 
 # References
 
