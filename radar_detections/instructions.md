@@ -16,7 +16,7 @@
     - pip install numpy
 
 ## Downloading the dataset
-- Use the following google drive link to download ROD2024: https://drive.google.com/drive/folders/1XXXKaU6_MAtqp9imyqpOEVu2vbvuqaCn?usp=sharing
+- Use the following google drive link to download the "ROD2024" folder as a subdirectory under "radar_detections": https://drive.google.com/drive/folders/1XXXKaU6_MAtqp9imyqpOEVu2vbvuqaCn?usp=sharing
 - Move the downloaded ROD2024 folder inside the "radar_detections" main folder
 
 ## Configuration file
@@ -34,6 +34,7 @@ This is the main jupyter notebook used for the radar object detection.
     - Running the entire script which involves training and validation.
         - In the section Model Validation/testing. Comment the 3 and 4 statments and either uncomment 1 or 2 depending on the avaibility of GPU. For base model (rod_v0) and for the multibranch model (rod_v1).
     - Only running the validation and using the provided trained models as .pkl files
+        - Download the "trained_models" folder containing .pkl files as a subdirectory under "radar_detections": https://drive.google.com/drive/folders/1GW93bPf7UZ-OhiEhrsuTuxwWYB4yqbbL?usp=sharing 
         - Skip the "Model training" section by not running the 8 cells inside it.
         - In the section Model Validation/testing. Comment the 1 and 2 statments and either uncomment 3 or 4 depending on the avaibility of GPU. For base model (rod_v0) and for the multibranch model (rod_v1).
 
